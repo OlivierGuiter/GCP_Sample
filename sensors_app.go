@@ -28,31 +28,31 @@ import (
 // Estimote data struct
 type GpsReadout struct {
 	Latitude  float64 `json:"lat,string"`
-	LatPole   string  "latPole"
+	LatPole   string  `json:"latPole"`
 	Longitude float64 `json:"lon,string"`
-	LonPole   string  "lonPole"
+	LonPole   string  `json:"lonPole"`
 }
 
 type TlmData struct {
-	Version uint8   "version"
-	Vbatt   uint16  "vbatt"
-	Temp    float32 "temp"
-	AdvCnt  uint32  "advCnt"
-	SecCnt  uint32  "secCnt"
+	Version uint8   `json:"version"`
+	Vbatt   uint16  `json:"vbatt"`
+	Temp    float32 `json:"temp"`
+	AdvCnt  uint32  `json:"advCnt"`
+	SecCnt  uint32  `json:"secCnt"`
 }
 
 type Estimote struct {
-	TagId             string     "tagId"
-	GatewayId         string     "gatewayId"
-	GatewayLocation   string     "gatewayLocation"
-	GatewayGpsReadout GpsReadout "gatewayGpsReadout"
-	LastSeen          int64      "lastSeen"
-	SmoothingWindow   int        "smoothingWindow"
-	LowerDistance     float64    "lowerDistance"
-	MeanDistance      float64    "meanDistance"
-	UpperDistance     float64    "upperDistance"
+	TagId             string     `json:"tagId"`
+	GatewayId         string     `json:"gatewayId"`
+	GatewayLocation   string     `json:"gatewayLocation"`
+	GatewayGpsReadout GpsReadout `json:"gatewayGpsReadout"`
+	LastSeen          int64      `json:"lastSeen"`
+	SmoothingWindow   int        `json:"smoothingWindow"`
+	LowerDistance     float64    `json:"lowerDistance"`
+	MeanDistance      float64    `json:"meanDistance"`
+	UpperDistance     float64    `json:"upperDistance"`
 
-	Tlm 		  TlmData "tlm"
+	Tlm TlmData "tlm"
 }
 
 type TagEntry struct {
@@ -67,6 +67,10 @@ type PieData struct {
 	SubTitle   string
 	SeriesName string
 	DataArray  string
+
+	//SPline
+	YAxisText   string
+	ValueSuffix string
 }
 
 var (
@@ -135,6 +139,7 @@ func main() {
 	http.HandleFunc("/_ah/health", healthCheckHandler)
 	http.HandleFunc("/_ah/stop", shutdownHandler)
 	http.HandleFunc("/pie", HandlerPIE)
+	http.HandleFunc("/spline", HandlerSPLINE)
 	http.HandleFunc("/test", HandlerTEST)
 
 	go subscribe(ctx)
@@ -166,8 +171,8 @@ func subscribe(ctx context.Context) {
 				go pubsub.Ack(ctx, SubName, msg.AckID)
 				continue
 			} else {
-			//log.Printf("Debug data: %s\n", msg.Data)
-			log.Printf("Debug gw loc: %#v\n\n", estimote)
+				//log.Printf("Debug data: %s\n", msg.Data)
+				//log.Printf("Debug gw loc: %#v\n\n", estimote)
 			}
 
 			//		log.Printf("[ID %s] Processing.", estimote.TagId)
@@ -201,15 +206,15 @@ func updateData(estimote *Estimote) error {
 	for idx := range TagsList {
 		if TagsList[idx].TagId == estimote.TagId {
 			//log.Printf("Found [ID %s]: %d \n", estimote.TagId, TagsList[idx].Count)
-		TagsListMu.Lock()
+			TagsListMu.Lock()
 			TagsList[idx].Count++
 			TagsList[idx].DataList.PushFront(estimote)
 
 			if TagsList[idx].DataList.Len() > MaxDataKeep {
 				TagsList[idx].DataList.Remove(TagsList[idx].DataList.Back())
-			//	log.Printf("Queue Len [ID %s]: %d\n", estimote.TagId, TagsList[idx].DataList.Len())
+				//	log.Printf("Queue Len [ID %s]: %d\n", estimote.TagId, TagsList[idx].DataList.Len())
 			}
-		TagsListMu.Unlock()
+			TagsListMu.Unlock()
 			bfound = true
 		}
 	}
@@ -225,7 +230,7 @@ func updateData(estimote *Estimote) error {
 		TagsList = append(TagsList, esttmp)
 		TagsListMu.Unlock()
 		log.Printf("Append to list [ID %s]\n", estimote.TagId)
-		fmt.Println("%#v",estimote)
+		fmt.Println("%#v", estimote)
 	}
 
 	return nil
@@ -238,11 +243,11 @@ func HandlerTEST(w http.ResponseWriter, r *http.Request) {
 	for i := range TagsList {
 		fmt.Println("-----------------------")
 		e := TagsList[i].DataList.Front()
-			// do something with e.Value
+		// do something with e.Value
 		fmt.Println("%#v", e.Value)
 		fmt.Println("%+v", e.Value)
 		fmt.Println("%T", e.Value)
-		}
+	}
 }
 
 /*

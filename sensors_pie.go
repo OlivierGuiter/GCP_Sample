@@ -5,24 +5,11 @@
 package main
 
 import (
-//	"encoding/json"
-//	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-//	"sync"
 	"text/template"
-//	"time"
-
-//	"golang.org/x/net/context"
-//	"google.golang.org/cloud/pubsub"
-
-//	"golang.org/x/oauth2"
-//	"golang.org/x/oauth2/google"
-//	"google.golang.org/cloud"
-//	"io/ioutil"
 )
-
 
 /*---------------------
  */
@@ -108,7 +95,6 @@ var TemplatePieHtml = `{{define "T"}}
  
     <body>
     By <a id="copyright" class="anchor" href="http://www.intel.com" >olivier.guiter@intel.com</a>
-        
     <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/4.2.4/highcharts.js"></script>
     <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/4.2.4/modules/exporting.js"></script>
 
