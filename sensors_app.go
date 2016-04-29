@@ -1,6 +1,7 @@
 // --------------------------------------------
-//
-//
+// Code sample:
+// Get data from GCP PubSub
+// Display charts
 // --------------------------------------------
 
 package main
@@ -48,6 +49,8 @@ type Estimote struct {
 	GatewayGpsReadout GpsReadout `json:"gatewayGpsReadout"`
 	LastSeen          int64      `json:"lastSeen"`
 	SmoothingWindow   int        `json:"smoothingWindow"`
+	Rssi	          int        `json:"rssi"`
+	Distance	  float64    `json:"distance"`
 	LowerDistance     float64    `json:"lowerDistance"`
 	MeanDistance      float64    `json:"meanDistance"`
 	UpperDistance     float64    `json:"upperDistance"`
@@ -139,7 +142,7 @@ func main() {
 	http.HandleFunc("/_ah/health", healthCheckHandler)
 	http.HandleFunc("/_ah/stop", shutdownHandler)
 	http.HandleFunc("/pie", HandlerPIE)
-	http.HandleFunc("/spline", HandlerSPLINE)
+	http.HandleFunc("/distance", HandlerDistance)
 	http.HandleFunc("/test", HandlerTEST)
 
 	go subscribe(ctx)
@@ -171,8 +174,10 @@ func subscribe(ctx context.Context) {
 				go pubsub.Ack(ctx, SubName, msg.AckID)
 				continue
 			} else {
-				//log.Printf("Debug data: %s\n", msg.Data)
-				//log.Printf("Debug gw loc: %#v\n\n", estimote)
+fmt.Println("\n-------------")
+				log.Printf("Debug data: %s\n", msg.Data)
+				log.Printf("Debug gw loc: %#v\n\n", estimote)
+
 			}
 
 			//		log.Printf("[ID %s] Processing.", estimote.TagId)
@@ -208,10 +213,10 @@ func updateData(estimote *Estimote) error {
 			//log.Printf("Found [ID %s]: %d \n", estimote.TagId, TagsList[idx].Count)
 			TagsListMu.Lock()
 			TagsList[idx].Count++
-			TagsList[idx].DataList.PushFront(estimote)
+			TagsList[idx].DataList.PushBack(estimote)
 
 			if TagsList[idx].DataList.Len() > MaxDataKeep {
-				TagsList[idx].DataList.Remove(TagsList[idx].DataList.Back())
+				TagsList[idx].DataList.Remove(TagsList[idx].DataList.Front())
 				//	log.Printf("Queue Len [ID %s]: %d\n", estimote.TagId, TagsList[idx].DataList.Len())
 			}
 			TagsListMu.Unlock()

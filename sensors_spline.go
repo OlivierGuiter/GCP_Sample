@@ -5,19 +5,18 @@
 package main
 
 import (
-	"fmt"
+//	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"text/template"
-	//	"container/list"
 )
 
 /*---------------------
  */
-func HandlerSPLINE(w http.ResponseWriter, r *http.Request) {
+func HandlerDistance(w http.ResponseWriter, r *http.Request) {
 
-	if r.URL.Path != "/spline" {
+	if r.URL.Path != "/distance" {
 		http.NotFound(w, r)
 		return
 	}
@@ -25,11 +24,11 @@ func HandlerSPLINE(w http.ResponseWriter, r *http.Request) {
 	var pp PieData
 	pp.ChartType = "spline"
 	pp.Title = "Sensors activities 2016"
-	pp.SubTitle = "spline by sensors"
+	pp.SubTitle = "Sensors range"
 	pp.SeriesName = "Sensors"
 
-	pp.ValueSuffix = "(°C)"
-	pp.YAxisText = "Temperature (°C)"
+	pp.ValueSuffix = "dist"
+	pp.YAxisText = "Approximate distance from beacon"
 
 	/* sample data is like that
 	   [{ name: 'Tokyo', data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6] },
@@ -43,8 +42,9 @@ func HandlerSPLINE(w http.ResponseWriter, r *http.Request) {
 		pp.DataArray = pp.DataArray + "{ name: '" + TagsList[i].TagId + "', data: ["
 		for e := TagsList[i].DataList.Front(); e != nil; e = e.Next() {
 			t1 := e.Value.(*Estimote)
+//			t2 := strconv.FormatFloat(float64(t1.Tlm.Temp), 'f', -1, 32)
 			t2 := strconv.FormatFloat(t1.MeanDistance, 'f', -1, 64)
-
+//			t2 := strconv.Itoa(t1.Rssi * -1)
 			pp.DataArray = pp.DataArray + t2 + ","
 		}
 		pp.DataArray = pp.DataArray + "]},"
@@ -52,7 +52,7 @@ func HandlerSPLINE(w http.ResponseWriter, r *http.Request) {
 
 	pp.DataArray = pp.DataArray + "]"
 
-	fmt.Println("\n-------------\nDatas:" + pp.DataArray)
+//	fmt.Println("\n-------------\nDatas:" + pp.DataArray)
 
 	if t, err := template.New("foo").Parse(TemplateSplineHtml); err != nil {
 		log.Printf("Could not create template: %v", err)
@@ -85,15 +85,16 @@ var TemplateSplineHtml = `{{define "T"}}
                 subtitle: {
                     text: '{{.SubTitle}}',
                 },
-            //    xAxis: {
-                  //   categories: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+          //      xAxis: {
+          //           categories: "Mean distance"
               //     categories: [{{.SeriesName}}] 
-              //  },
+           //     },
                 yAxis: {
                     title: {
-                        // text: 'Temperature (°C)'
                         text: '{{.YAxisText}}'
                     },
+max: 10,
+min: 0,
                     plotLines: [{
                         value: 0,
                         width: 1,
@@ -102,7 +103,6 @@ var TemplateSplineHtml = `{{define "T"}}
                 },
                 tooltip: {
                     shared: true,
-                  /*  valueSuffix: '°C' */
                     valueSuffix: '{{.ValueSuffix}}'
                 },
                 legend: {
@@ -118,7 +118,7 @@ var TemplateSplineHtml = `{{define "T"}}
         </script>
     </head>
     <body>
-    By <a id="copyright" class="anchor" href="http://www.intel.com" >olivier.guiter@intel.com</a>
+    <a id="copyright" class="anchor" href="http://www.intel.com" >olivier.guiter@intel.com</a>
     <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/4.0.1/highcharts.js"></script>
     <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/4.0.1/modules/exporting.js"></script>
 
