@@ -5,11 +5,10 @@
 package main
 
 import (
-//	"fmt"
+	//	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"text/template"
 )
 
 /*---------------------
@@ -42,9 +41,9 @@ func HandlerDistance(w http.ResponseWriter, r *http.Request) {
 		pp.DataArray = pp.DataArray + "{ name: '" + TagsList[i].TagId + "', data: ["
 		for e := TagsList[i].DataList.Front(); e != nil; e = e.Next() {
 			t1 := e.Value.(*Estimote)
-//			t2 := strconv.FormatFloat(float64(t1.Tlm.Temp), 'f', -1, 32)
+			//			t2 := strconv.FormatFloat(float64(t1.Tlm.Temp), 'f', -1, 32)
 			t2 := strconv.FormatFloat(t1.MeanDistance, 'f', -1, 64)
-//			t2 := strconv.Itoa(t1.Rssi * -1)
+			//			t2 := strconv.Itoa(t1.Rssi * -1)
 			pp.DataArray = pp.DataArray + t2 + ","
 		}
 		pp.DataArray = pp.DataArray + "]},"
@@ -52,81 +51,12 @@ func HandlerDistance(w http.ResponseWriter, r *http.Request) {
 
 	pp.DataArray = pp.DataArray + "]"
 
-//	fmt.Println("\n-------------\nDatas:" + pp.DataArray)
+	//	fmt.Println("\n-------------\nDatas:" + pp.DataArray)
 
-	if t, err := template.New("foo").Parse(TemplateSplineHtml); err != nil {
-		log.Printf("Could not create template: %v", err)
-	} else {
-		if err = t.ExecuteTemplate(w, "T", pp); err != nil {
-			log.Printf("Could not execute template: %v", err)
-		}
+	if err := tpl.ExecuteTemplate(w, "spline.html", pp); err != nil {
+		log.Printf("Could not execute template: %v", err)
 	}
+
 }
-
-// spline,line,column,area,bar
-var TemplateSplineHtml = `{{define "T"}}
-<!DOCTYPE HTML>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <title>GCP Sample - {{.ChartType}}</title>
-
-        <script type="text/javascript" src="http://cdn.hcharts.cn/jquery/jquery-1.8.3.min.js"></script>
-        <script type="text/javascript">
-        $(function () {
-            $('#container').highcharts({
-                chart: {
-                    // type: 'spline'
-                    type: '{{.ChartType}}' // see http://api.highcharts.com/highcharts#plotOptions
-                },
-                title: {
-                    text: '{{.Title}}',
-                },
-                subtitle: {
-                    text: '{{.SubTitle}}',
-                },
-          //      xAxis: {
-          //           categories: "Mean distance"
-              //     categories: [{{.SeriesName}}] 
-           //     },
-                yAxis: {
-                    title: {
-                        text: '{{.YAxisText}}'
-                    },
-max: 10,
-min: 0,
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }]
-                },
-                tooltip: {
-                    shared: true,
-                    valueSuffix: '{{.ValueSuffix}}'
-                },
-                legend: {
-                    layout: 'vertical',
-                    align: 'right',
-                    verticalAlign: 'middle',
-                    borderWidth: 0
-                },
-                series: {{.DataArray}}
-
-            });
-        });    
-        </script>
-    </head>
-    <body>
-    <a id="copyright" class="anchor" href="http://www.intel.com" >olivier.guiter@intel.com</a>
-    <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/4.0.1/highcharts.js"></script>
-    <script type="text/javascript" src="http://cdn.hcharts.cn/highcharts/4.0.1/modules/exporting.js"></script>
-
-    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
-
-    </body>
-</html>
-{{end}}
-`
 
 //Eof

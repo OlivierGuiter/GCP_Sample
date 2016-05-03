@@ -49,8 +49,8 @@ type Estimote struct {
 	GatewayGpsReadout GpsReadout `json:"gatewayGpsReadout"`
 	LastSeen          int64      `json:"lastSeen"`
 	SmoothingWindow   int        `json:"smoothingWindow"`
-	Rssi	          int        `json:"rssi"`
-	Distance	  float64    `json:"distance"`
+	Rssi              int        `json:"rssi"`
+	Distance          float64    `json:"distance"`
 	LowerDistance     float64    `json:"lowerDistance"`
 	MeanDistance      float64    `json:"meanDistance"`
 	UpperDistance     float64    `json:"upperDistance"`
@@ -83,6 +83,8 @@ var (
 
 	TagsListMu sync.Mutex
 	TagsList   []TagEntry
+
+	tpl = template.Must(template.ParseGlob("tmpl/*.html"))
 )
 
 const (
@@ -174,7 +176,7 @@ func subscribe(ctx context.Context) {
 				go pubsub.Ack(ctx, SubName, msg.AckID)
 				continue
 			} else {
-fmt.Println("\n-------------")
+				fmt.Println("\n-------------")
 				log.Printf("Debug data: %s\n", msg.Data)
 				log.Printf("Debug gw loc: %#v\n\n", estimote)
 
